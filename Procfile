@@ -1,0 +1,1 @@
+web: gunicorn nblogflask:app --log-file=-

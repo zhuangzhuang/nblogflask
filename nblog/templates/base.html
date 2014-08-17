@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <title>Blog</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='stylesheets/style.css')}}" />
+</head>
+<body>
+
+<header>
+    <h1>{{ title }}</h1>
+</header>
+
+<nav>
+    <span><a title="主页" href="/">home</a></span>
+    {% if session.user %}
+        <span><a title="发表" href="/post">post</a></span>
+        <span><a title="登出" href="/logout">logout</a></span>
+    {% else %}
+        <span><a title="登录" href="/login">login</a></span>
+        <span><a title="注册" href="/reg">register</a></span>
+    {% endif %}
+</nav>
+
+<article>
+    {% with messages = get_flashed_messages(with_categories=True) %}
+        {% for cat, message in messages %}
+            <div>{{ message }}</div>
+        {% endfor %}
+    {% endwith %}
+    {% block body %}
+    {% endblock %}
+</article>
+
+</body>
+</html>

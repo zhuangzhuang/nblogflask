@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block body %}
+{% for post in posts %}
+    <p><h2><a href="#">{{ post.title }} </a> </h2></p>
+    <p class="info">
+        作者：<a href="#">{{ post.name }}</a> |
+        日期：{{ post.time }}
+    </p>
+    <p>{{ post.post }}</p>
+{% endfor %}
+{% endblock %}
