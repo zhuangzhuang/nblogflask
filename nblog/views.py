@@ -1,10 +1,11 @@
 #coding: utf-8
 from flask import render_template, url_for, \
         g, request, Response, flash, redirect, \
-        session
+        session, send_from_directory
 from hashlib import md5
 from functools import wraps
 from markdown import markdown
+import os
 from nblog import app
 from models import User, Post
 
@@ -138,3 +139,36 @@ def logout():
     session['user'] = None
     flash(u'登出成功!', u'success')
     return redirect(url_for('index'))
+
+@app.route('/upload', methods=['GET', 'POST'])
+@checkLogin(['GET', 'POST'])
+def upload():
+    if request.method == 'GET':
+        context=dict(title=u'文件上传')
+        return render_template('upload.html', **context)
+    else:
+        for field in request.files:
+            file = request.files[field]
+            if file.filename == "":
+                continue
+            filename = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
+            file.save(filename)
+
+        flash(u'文件上传成功!', u'success')
+        return redirect(url_for('upload'))
+
+@app.route('/uploads/<path:filename>')
+def uploads(filename):
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+
+
+
+
+
+
+
+
+
+
+
+
