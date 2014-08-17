@@ -6,6 +6,6 @@
         作者：<a href="#">{{ post.name }}</a> |
         日期：{{ post.time }}
     </p>
-    <p>{{ post.post }}</p>
+    <p>{{ post.post | safe }}</p>
 {% endfor %}
 {% endblock %}

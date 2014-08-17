@@ -4,6 +4,7 @@ from flask import render_template, url_for, \
         session
 from hashlib import md5
 from functools import wraps
+from markdown import markdown
 from nblog import app
 from models import User, Post
 
@@ -42,7 +43,8 @@ def checkNotLogin(methods=['POST']):
 @app.route('/')
 def index():
     posts = Post.objects()
-    print posts
+    for post in posts:
+        post.post = markdown(post.post)
     context = dict(title=u"主页",
                    posts=posts)
     return render_template("index.html",
