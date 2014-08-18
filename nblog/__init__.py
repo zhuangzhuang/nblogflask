@@ -10,3 +10,4 @@ db = MongoEngine(app)
 app.session_interface = MongoEngineSessionInterface(db)
 
 from views import *
+from tools import *

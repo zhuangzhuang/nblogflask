@@ -2,12 +2,14 @@
 from flask import render_template, url_for, \
         g, request, Response, flash, redirect, \
         session, send_from_directory
+from mongoengine import Q
 from hashlib import md5
 from functools import wraps
 from markdown import markdown
 import os
 from nblog import app
 from models import User, Post
+import datetime
 
 def checkLogin(methods=['POST']):
     def decorator(f):
@@ -161,9 +163,34 @@ def upload():
 def uploads(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
+@app.route('/u/<name>')
+def user_posts(name):
+    user = User.objects(name=name)
+    if not user:
+        flash(u'用户不存在!', u'error')
+        return redirect(url_for('index'))
+    posts = Post.objects(name=name)
+    for post in posts:
+        post.post = markdown(post.post)
+    content = dict(title=session['user'].name,
+                   posts=posts)
+    return render_template('user.html', **content)
 
-
-
+@app.route('/u/<name>/<day>/<title>')
+def user_day_post(name, day, title):
+    days = day.split('-')
+    day = datetime.datetime(year=int(days[0]), month=int(days[1]), day=int(days[2]))
+    day_next = datetime.datetime(day.year, day.month, day.day+1)
+    query = Q(name=name) & Q(title=title) & Q(time__gte=day) & Q(time__lte=day_next)
+    posts = Post.objects(query)
+    if not posts:
+        flash(u'文件不存在', u'error')
+        return redirect(url_for('index'))
+    post = posts[0]
+    post.post = markdown(post.post)
+    context = dict(title='article',
+                   post=post)
+    return render_template('article.html', **context)
 
 
 
