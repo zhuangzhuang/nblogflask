@@ -54,7 +54,7 @@ def index():
                            **context)
 
 @app.route('/reg', methods=['POST', 'GET'])
-@checkLogin(['POST'])
+@checkNotLogin(['POST'])
 def reg():
     if request.method == 'GET':
         context = dict(title=u"注册")
@@ -192,8 +192,55 @@ def user_day_post(name, day, title):
                    post=post)
     return render_template('article.html', **context)
 
+@app.route('/edit/<name>/<day>/<title>', methods=['GET', 'POST'])
+@checkLogin(['POST', 'GET'])
+def edit_post(name, day, title):
+    currentUser=session['user']
+    days = day.split('-')
+    date = datetime.datetime(year=int(days[0]), month=int(days[1]), day=int(days[2]))
+    date_next = datetime.datetime(date.year, date.month, date.day+1)
+    name = currentUser.name
+    query = Q(name=name) & Q(title=title) & Q(time__gte=date) & Q(time__lte=date_next)
+    posts = Post.objects(query)
+    if request.method == 'GET':
+        if not posts:
+            flash(u'文章不存在', u'error')
+            return redirect(url_for('index'))
+        post = posts[0]
+        #post.post = markdown(post.post)
+        context = dict(title=u'编辑',
+                       post=post)
+        return render_template('edit.html', **context)
+    else:
+        if not posts:
+            flash(u'文章不存在', u'error')
+            return redirect(request.url)
+        post = posts[0]
+        post.post = request.form['post']
+        post.save()
 
+        url = '/'.join(['/u', name, day, title])
+        return redirect(url)
 
+@app.route('/remove/<name>/<day>/<title>', methods=['GET'])
+@checkLogin(['GET'])
+def remove_post(name, day, title):
+    currentUser=session['user']
+    days = day.split('-')
+    date = datetime.datetime(year=int(days[0]), month=int(days[1]), day=int(days[2]))
+    date_next = datetime.datetime(date.year, date.month, date.day+1)
+    name = currentUser.name
+    query = Q(name=name) & Q(title=title) & Q(time__gte=date) & Q(time__lte=date_next)
+    posts = Post.objects(query)
+
+    if not posts:
+        flash(u'文章不存在', u'error')
+        return redirect(url_for('index'))
+    post = posts[0]
+
+    post.delete()
+    flash(u'删除成功!', u'success')
+    return redirect(url_for('index'))
 
 
 
